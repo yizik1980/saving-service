@@ -32,6 +32,18 @@ app.post('/api/game', (req, res) => {
   res.json({ ok: true });
 });
 
+app.get('/api/game', (_req, res) => {
+  if (!fs.existsSync(CSV_FILE)) return res.json([]);
+  const content = fs.readFileSync(CSV_FILE, 'utf8').replace(/^\uFEFF/, '');
+  const lines = content.trim().split('\n');
+  const headers = lines[0].split(',').map((h) => h.replace(/"/g, ''));
+  const rows = lines.slice(1).map((line) => {
+    const values = line.split(',').map((v) => v.replace(/"/g, ''));
+    return Object.fromEntries(headers.map((h, i) => [h, values[i]]));
+  });
+  res.json(rows);
+});
+
 app.listen(PORT, () => {
   console.log(`Saving service running on port ${PORT}`);
 });
